@@ -1,0 +1,6 @@
+# Requirements for Wikipedia RAG example
+sentence-transformers>=2.2.0
+wikipedia-api>=0.6.0
+
+# PeachDB (install from source or PyPI)
+# pip install -e ..  # If running from examples/ directory

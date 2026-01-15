@@ -1,0 +1,170 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.manifest
+*.spec
+
+# Virtual Environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+.conda/
+
+# Python Testing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+*.cover
+*.log
+.hypothesis/
+
+# C Extensions
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.pyd
+*.obj
+*.lo
+*.la
+*.slo
+
+# Build artifacts
+*.out
+*.app
+.libs/
+.deps/
+*.dSYM/
+
+# Neovim
+*.swp
+*.swo
+*.swn
+.*.sw[a-p]
+*~
+Session.vim
+.netrwhist
+tags
+
+# Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+
+# IDEs
+.vscode/
+.idea/
+*.iml
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+.claude
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*~
+
+# Project specific
+*.pdb
+/my_database/
+/test_db/
+/tmp_*
+/peachbase_test_*
+/temp_*
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Documentation build
+docs/_build/
+docs/.doctrees/
+site/
+
+# PyCharm
+.idea/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# pytype
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# Distribution / packaging
+*.tar.gz
+*.zip
+
+# Compiled source
+*.com
+*.class
+*.exe
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+*.old
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# AWS
+.aws/
+*.pem
+
+# Lambda deployment
+lambda_function.zip
+package/
+
+# Test databases
+/tmp/
+*.db
+*.sqlite
+*.sqlite3
