@@ -354,21 +354,23 @@ void peachbase_batch_cosine_similarity(
     float* results
 ) {
     // Only use OpenMP for larger batches (overhead not worth it for small batches)
-    size_t i;
+    // Note: OpenMP 2.0 (MSVC) requires signed loop index
+    int i;
+    int n = (int)n_vectors;
 #ifdef _OPENMP
     if (n_vectors >= 1000) {
         #pragma omp parallel for schedule(dynamic, 64)
-        for (i = 0; i < n_vectors; i++) {
+        for (i = 0; i < n; i++) {
             results[i] = peachbase_cosine_similarity_simd(query, &vectors[i * dim], dim);
         }
     } else {
-        for (i = 0; i < n_vectors; i++) {
+        for (i = 0; i < n; i++) {
             results[i] = peachbase_cosine_similarity_simd(query, &vectors[i * dim], dim);
         }
     }
 #else
     // OpenMP not available, use sequential
-    for (i = 0; i < n_vectors; i++) {
+    for (i = 0; i < n; i++) {
         results[i] = peachbase_cosine_similarity_simd(query, &vectors[i * dim], dim);
     }
 #endif
@@ -382,21 +384,23 @@ void peachbase_batch_l2_distance(
     float* results
 ) {
     // Only use OpenMP for larger batches (overhead not worth it for small batches)
-    size_t i;
+    // Note: OpenMP 2.0 (MSVC) requires signed loop index
+    int i;
+    int n = (int)n_vectors;
 #ifdef _OPENMP
     if (n_vectors >= 1000) {
         #pragma omp parallel for schedule(dynamic, 64)
-        for (i = 0; i < n_vectors; i++) {
+        for (i = 0; i < n; i++) {
             results[i] = peachbase_l2_distance_simd(query, &vectors[i * dim], dim);
         }
     } else {
-        for (i = 0; i < n_vectors; i++) {
+        for (i = 0; i < n; i++) {
             results[i] = peachbase_l2_distance_simd(query, &vectors[i * dim], dim);
         }
     }
 #else
     // OpenMP not available, use sequential
-    for (i = 0; i < n_vectors; i++) {
+    for (i = 0; i < n; i++) {
         results[i] = peachbase_l2_distance_simd(query, &vectors[i * dim], dim);
     }
 #endif
@@ -410,21 +414,23 @@ void peachbase_batch_dot_product(
     float* results
 ) {
     // Only use OpenMP for larger batches (overhead not worth it for small batches)
-    size_t i;
+    // Note: OpenMP 2.0 (MSVC) requires signed loop index
+    int i;
+    int n = (int)n_vectors;
 #ifdef _OPENMP
     if (n_vectors >= 1000) {
         #pragma omp parallel for schedule(dynamic, 64)
-        for (i = 0; i < n_vectors; i++) {
+        for (i = 0; i < n; i++) {
             results[i] = peachbase_dot_product_simd(query, &vectors[i * dim], dim);
         }
     } else {
-        for (i = 0; i < n_vectors; i++) {
+        for (i = 0; i < n; i++) {
             results[i] = peachbase_dot_product_simd(query, &vectors[i * dim], dim);
         }
     }
 #else
     // OpenMP not available, use sequential
-    for (i = 0; i < n_vectors; i++) {
+    for (i = 0; i < n; i++) {
         results[i] = peachbase_dot_product_simd(query, &vectors[i * dim], dim);
     }
 #endif
