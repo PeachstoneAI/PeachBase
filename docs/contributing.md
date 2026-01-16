@@ -539,6 +539,45 @@ peachbase/
 
 ---
 
+## Releasing (Maintainers)
+
+### Creating a Release
+
+1. **Update version** in `src/peachbase/_version.py` and `pyproject.toml`
+
+2. **Update changelog** in `docs/changelog.md`
+
+3. **Commit and push**:
+   ```bash
+   git add .
+   git commit -m "Bump version to X.Y.Z"
+   git push
+   ```
+
+4. **Create a git tag**:
+   ```bash
+   git tag -a vX.Y.Z -m "Release vX.Y.Z"
+   git push origin vX.Y.Z
+   ```
+
+5. **Create GitHub Release**:
+   - Go to https://github.com/PeachstoneAI/PeachBase/releases/new
+   - Select the tag you just created
+   - Title: `vX.Y.Z`
+   - Description: Copy relevant section from changelog
+   - Click "Publish release"
+
+6. **Automatic publishing**: GitHub Actions will build wheels and publish to PyPI
+
+### Version Numbering
+
+We follow [Semantic Versioning](https://semver.org/):
+- **MAJOR**: Breaking API changes
+- **MINOR**: New features, backwards compatible
+- **PATCH**: Bug fixes, backwards compatible
+
+---
+
 ## Questions?
 
 - Open a [discussion](https://github.com/PeachstoneAI/peachbase/discussions)
