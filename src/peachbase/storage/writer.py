@@ -1,18 +1,17 @@
 """Writer for serializing PeachBase collections to binary format."""
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Dict, Any
-import math
+from typing import TYPE_CHECKING, Any
 
 from peachbase.storage.format import (
-    PeachBaseHeader,
-    VectorSection,
-    TextSection,
-    MetadataSection,
-    BM25IndexSection,
-    MAGIC_NUMBER,
-    HEADER_SIZE,
     FORMAT_VERSION,
+    HEADER_SIZE,
+    MAGIC_NUMBER,
+    BM25IndexSection,
+    MetadataSection,
+    PeachBaseHeader,
+    TextSection,
+    VectorSection,
 )
 
 if TYPE_CHECKING:
@@ -111,6 +110,7 @@ def upload_collection_to_s3(
         **kwargs: Additional arguments for S3 upload (e.g., ServerSideEncryption)
     """
     import tempfile
+
     import boto3
 
     # Write to temporary file

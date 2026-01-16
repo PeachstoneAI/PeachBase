@@ -3,10 +3,10 @@
 Implements BM25 algorithm with inverted index and uses C extension for scoring.
 """
 
-from typing import List, Dict, Tuple, Any
-import math
 import heapq
+import math
 from collections import defaultdict
+from typing import Any
 
 from peachbase.text.tokenizer import Tokenizer
 
@@ -23,7 +23,7 @@ class BM25Index:
 
     def __init__(
         self,
-        documents: List[Dict[str, Any]],
+        documents: list[dict[str, Any]],
         k1: float = 1.5,
         b: float = 0.75,
         tokenizer: Tokenizer | None = None,
@@ -40,8 +40,8 @@ class BM25Index:
     def _build_index(self) -> None:
         """Build BM25 index from documents."""
         # Tokenize all documents
-        self.doc_tokens: List[List[str]] = []
-        self.doc_lengths: List[int] = []
+        self.doc_tokens: list[list[str]] = []
+        self.doc_lengths: list[int] = []
 
         for doc in self.documents:
             tokens = self.tokenizer.tokenize(doc.get("text", ""))
@@ -49,12 +49,14 @@ class BM25Index:
             self.doc_lengths.append(len(tokens))
 
         # Calculate average document length
-        self.avg_doc_len = sum(self.doc_lengths) / len(self.doc_lengths) if self.doc_lengths else 0
+        self.avg_doc_len = (
+            sum(self.doc_lengths) / len(self.doc_lengths) if self.doc_lengths else 0
+        )
 
         # Build vocabulary and inverted index
-        self.vocabulary: Dict[str, int] = {}  # term -> term_id
-        self.inverted_index: Dict[int, Dict[int, int]] = (
-            defaultdict(dict)
+        self.vocabulary: dict[str, int] = {}  # term -> term_id
+        self.inverted_index: dict[int, dict[int, int]] = defaultdict(
+            dict
         )  # term_id -> {doc_idx: term_freq}
 
         term_id = 0
@@ -75,15 +77,17 @@ class BM25Index:
 
         # Calculate IDF scores
         n_docs = len(self.documents)
-        self.idf_scores: List[float] = [0.0] * len(self.vocabulary)
+        self.idf_scores: list[float] = [0.0] * len(self.vocabulary)
 
-        for term, tid in self.vocabulary.items():
-            df = len(self.inverted_index[tid])  # Document frequency (number of docs containing term)
+        for _term, tid in self.vocabulary.items():
+            df = len(
+                self.inverted_index[tid]
+            )  # Document frequency (number of docs containing term)
             # IDF formula: log((N - df + 0.5) / (df + 0.5) + 1.0)
             idf = math.log((n_docs - df + 0.5) / (df + 0.5) + 1.0)
             self.idf_scores[tid] = idf
 
-    def search(self, query: str, limit: int = 10) -> List[Tuple[str, float]]:
+    def search(self, query: str, limit: int = 10) -> list[tuple[str, float]]:
         """Search documents using BM25.
 
         Args:
@@ -130,7 +134,7 @@ class BM25Index:
         return heapq.nlargest(limit, scores, key=lambda x: x[1])
 
     def _score_document(
-        self, doc_idx: int, query_term_ids: List[int], query_idfs: List[float]
+        self, doc_idx: int, query_term_ids: list[int], query_idfs: list[float]
     ) -> float:
         """Score a single document for the query.
 
@@ -147,7 +151,7 @@ class BM25Index:
         normalized_len = 1.0 - self.b + self.b * (doc_len / self.avg_doc_len)
 
         # Get term frequencies for this document using O(1) dict lookup
-        for tid, idf in zip(query_term_ids, query_idfs):
+        for tid, idf in zip(query_term_ids, query_idfs, strict=True):
             # Fast O(1) lookup instead of O(n) linear search
             tf = self.inverted_index[tid].get(doc_idx, 0)
 
@@ -159,7 +163,7 @@ class BM25Index:
 
         return score
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Export index to dictionary for serialization."""
         return {
             "vocabulary": self.vocabulary,
@@ -172,8 +176,8 @@ class BM25Index:
     @classmethod
     def from_dict(
         cls,
-        data: Dict[str, Any],
-        documents: List[Dict[str, Any]],
+        data: dict[str, Any],
+        documents: list[dict[str, Any]],
         k1: float = 1.5,
         b: float = 0.75,
     ) -> "BM25Index":
@@ -200,7 +204,9 @@ class BM25Index:
         index.doc_lengths = data["doc_lengths"]
         index.avg_doc_len = data["avg_doc_len"]
         # Convert nested dict structure: term_id -> {doc_idx: freq}
-        index.inverted_index = defaultdict(dict, {int(k): v for k, v in data["inverted_index"].items()})
+        index.inverted_index = defaultdict(
+            dict, {int(k): v for k, v in data["inverted_index"].items()}
+        )
 
         # Note: doc_tokens is not stored, regenerate if needed
         index.doc_tokens = []
@@ -209,7 +215,7 @@ class BM25Index:
 
 
 def build_bm25_index(
-    documents: List[Dict[str, Any]], k1: float = 1.5, b: float = 0.75
+    documents: list[dict[str, Any]], k1: float = 1.5, b: float = 0.75
 ) -> BM25Index:
     """Build BM25 index from documents.
 

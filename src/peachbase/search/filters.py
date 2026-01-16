@@ -7,10 +7,12 @@ Supports:
 - Logical operators: {"$and": [...], "$or": [...]}
 """
 
-from typing import Dict, Any, List, Set
+from typing import Any
 
 
-def apply_filter(documents: List[Dict[str, Any]], filter_query: Dict[str, Any]) -> Set[int]:
+def apply_filter(
+    documents: list[dict[str, Any]], filter_query: dict[str, Any]
+) -> set[int]:
     """Apply metadata filter to documents and return matching indices.
 
     Args:
@@ -40,7 +42,7 @@ def apply_filter(documents: List[Dict[str, Any]], filter_query: Dict[str, Any]) 
     return matching_indices
 
 
-def _match_document(metadata: Dict[str, Any], filter_query: Dict[str, Any]) -> bool:
+def _match_document(metadata: dict[str, Any], filter_query: dict[str, Any]) -> bool:
     """Check if a document's metadata matches the filter query.
 
     Args:
@@ -93,7 +95,7 @@ def _match_field(field_value: Any, query_value: Any) -> bool:
         return field_value == query_value
 
 
-def _match_operators(field_value: Any, operators: Dict[str, Any]) -> bool:
+def _match_operators(field_value: Any, operators: dict[str, Any]) -> bool:
     """Match field value against operator expressions.
 
     Args:

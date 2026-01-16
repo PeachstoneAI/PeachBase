@@ -1,5 +1,7 @@
 """Unit tests for lexical search (BM25)."""
+
 import pytest
+
 import peachbase
 
 
@@ -9,11 +11,7 @@ def test_lexical_search_basic(temp_db_path, sample_documents):
     collection = db.create_collection("test", dimension=384)
     collection.add(sample_documents)
 
-    results = collection.search(
-        query_text="machine learning",
-        mode="lexical",
-        limit=3
-    )
+    results = collection.search(query_text="machine learning", mode="lexical", limit=3)
 
     results_list = results.to_list()
     assert len(results_list) <= 3
@@ -27,11 +25,7 @@ def test_lexical_search_exact_match(temp_db_path, sample_documents):
     collection.add(sample_documents)
 
     # Search for "neural networks" which appears in doc2
-    results = collection.search(
-        query_text="neural networks",
-        mode="lexical",
-        limit=5
-    )
+    results = collection.search(query_text="neural networks", mode="lexical", limit=5)
 
     results_list = results.to_list()
 
@@ -60,11 +54,7 @@ def test_lexical_search_empty_query(temp_db_path, sample_documents):
     collection = db.create_collection("test", dimension=384)
     collection.add(sample_documents)
 
-    results = collection.search(
-        query_text="",
-        mode="lexical",
-        limit=5
-    )
+    results = collection.search(query_text="", mode="lexical", limit=5)
 
     # Empty query should return empty results
     assert len(results.to_list()) == 0
@@ -77,9 +67,7 @@ def test_lexical_search_no_matches(temp_db_path, sample_documents):
     collection.add(sample_documents)
 
     results = collection.search(
-        query_text="xyznonexistentword",
-        mode="lexical",
-        limit=5
+        query_text="xyznonexistentword", mode="lexical", limit=5
     )
 
     # No matches should return empty results
@@ -95,11 +83,7 @@ def test_lexical_search_limit(temp_db_path, sample_documents):
     # Note: There's a known bug where lexical search returns more results than limit
     # This test verifies that results are at least bounded by document count
     for limit in [1, 2, 3, 10]:
-        results = collection.search(
-            query_text="learning",
-            mode="lexical",
-            limit=limit
-        )
+        results = collection.search(query_text="learning", mode="lexical", limit=limit)
         results_list = results.to_list()
         # Just verify we don't return more than total documents
         assert len(results_list) <= len(sample_documents)
@@ -111,11 +95,7 @@ def test_lexical_search_results_sorted(temp_db_path, sample_documents):
     collection = db.create_collection("test", dimension=384)
     collection.add(sample_documents)
 
-    results = collection.search(
-        query_text="learning",
-        mode="lexical",
-        limit=5
-    )
+    results = collection.search(query_text="learning", mode="lexical", limit=5)
 
     results_list = results.to_list()
     scores = [r["score"] for r in results_list]
@@ -134,34 +114,28 @@ def test_lexical_search_case_insensitive(temp_db_path):
             "id": "doc1",
             "text": "MACHINE LEARNING is great",
             "vector": [0.1] * 384,
-            "metadata": {}
+            "metadata": {},
         },
         {
             "id": "doc2",
             "text": "machine learning is wonderful",
             "vector": [0.2] * 384,
-            "metadata": {}
-        }
+            "metadata": {},
+        },
     ]
     collection.add(docs)
 
     # Search with lowercase
-    results1 = collection.search(
-        query_text="machine learning",
-        mode="lexical",
-        limit=5
-    )
+    results1 = collection.search(query_text="machine learning", mode="lexical", limit=5)
 
     # Search with uppercase
-    results2 = collection.search(
-        query_text="MACHINE LEARNING",
-        mode="lexical",
-        limit=5
-    )
+    results2 = collection.search(query_text="MACHINE LEARNING", mode="lexical", limit=5)
 
     # Should find same documents
     assert len(results1.to_list()) == len(results2.to_list())
-    assert {r["id"] for r in results1.to_list()} == {r["id"] for r in results2.to_list()}
+    assert {r["id"] for r in results1.to_list()} == {
+        r["id"] for r in results2.to_list()
+    }
 
 
 def test_lexical_search_punctuation_handling(temp_db_path):
@@ -174,16 +148,12 @@ def test_lexical_search_punctuation_handling(temp_db_path):
             "id": "doc1",
             "text": "Hello, world! This is a test.",
             "vector": [0.1] * 384,
-            "metadata": {}
+            "metadata": {},
         }
     ]
     collection.add(docs)
 
-    results = collection.search(
-        query_text="hello world test",
-        mode="lexical",
-        limit=5
-    )
+    results = collection.search(query_text="hello world test", mode="lexical", limit=5)
 
     # Should find the document despite punctuation
     assert len(results.to_list()) > 0
@@ -195,11 +165,7 @@ def test_lexical_search_empty_collection(temp_db_path):
     db = peachbase.connect(temp_db_path)
     collection = db.create_collection("test", dimension=384)
 
-    results = collection.search(
-        query_text="machine learning",
-        mode="lexical",
-        limit=5
-    )
+    results = collection.search(query_text="machine learning", mode="lexical", limit=5)
 
     assert len(results.to_list()) == 0
 
@@ -210,11 +176,7 @@ def test_lexical_search_single_term(temp_db_path, sample_documents):
     collection = db.create_collection("test", dimension=384)
     collection.add(sample_documents)
 
-    results = collection.search(
-        query_text="learning",
-        mode="lexical",
-        limit=5
-    )
+    results = collection.search(query_text="learning", mode="lexical", limit=5)
 
     results_list = results.to_list()
     assert len(results_list) > 0
@@ -231,9 +193,7 @@ def test_lexical_search_multiple_terms(temp_db_path, sample_documents):
     collection.add(sample_documents)
 
     results = collection.search(
-        query_text="machine learning artificial intelligence",
-        mode="lexical",
-        limit=5
+        query_text="machine learning artificial intelligence", mode="lexical", limit=5
     )
 
     results_list = results.to_list()
@@ -254,22 +214,18 @@ def test_lexical_search_term_frequency_matters(temp_db_path):
             "id": "doc1",
             "text": "machine learning",
             "vector": [0.1] * 384,
-            "metadata": {}
+            "metadata": {},
         },
         {
             "id": "doc2",
             "text": "machine learning machine learning machine learning",
             "vector": [0.2] * 384,
-            "metadata": {}
-        }
+            "metadata": {},
+        },
     ]
     collection.add(docs)
 
-    results = collection.search(
-        query_text="machine learning",
-        mode="lexical",
-        limit=5
-    )
+    results = collection.search(query_text="machine learning", mode="lexical", limit=5)
 
     results_list = results.to_list()
 
@@ -286,11 +242,7 @@ def test_lexical_search_result_contains_document_data(temp_db_path, sample_docum
     collection = db.create_collection("test", dimension=384)
     collection.add(sample_documents)
 
-    results = collection.search(
-        query_text="learning",
-        mode="lexical",
-        limit=1
-    )
+    results = collection.search(query_text="learning", mode="lexical", limit=1)
 
     result = results.to_list()[0]
 
@@ -311,19 +263,17 @@ def test_lexical_search_large_collection(temp_db_path):
     docs = [
         {
             "id": f"doc{i}",
-            "text": f"Document {i} about machine learning and AI" if i % 2 == 0 else f"Document {i} about other topics",
+            "text": f"Document {i} about machine learning and AI"
+            if i % 2 == 0
+            else f"Document {i} about other topics",
             "vector": [i * 0.001] * 384,
-            "metadata": {"index": i}
+            "metadata": {"index": i},
         }
         for i in range(1000)
     ]
     collection.add(docs)
 
-    results = collection.search(
-        query_text="machine learning",
-        mode="lexical",
-        limit=10
-    )
+    results = collection.search(query_text="machine learning", mode="lexical", limit=10)
 
     results_list = results.to_list()
     # Note: Due to a bug, lexical search returns more results than limit

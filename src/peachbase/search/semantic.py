@@ -4,12 +4,13 @@ Uses brute-force search with SIMD optimizations for fast similarity computation.
 Suitable for collections up to ~100K vectors.
 """
 
-from typing import List, Tuple, Literal, Set
 import array
 import heapq
+from typing import Literal
 
 try:
     from peachbase import _simd
+
     SIMD_AVAILABLE = True
 except ImportError:
     SIMD_AVAILABLE = False
@@ -17,13 +18,13 @@ except ImportError:
 
 
 def semantic_search(
-    query_vector: List[float],
-    vectors: List[List[float]],
+    query_vector: list[float],
+    vectors: list[list[float]],
     metric: Literal["cosine", "l2", "dot"] = "cosine",
     limit: int = 10,
-    candidate_indices: Set[int] | None = None,
+    candidate_indices: set[int] | None = None,
     flat_vectors: array.array | None = None,
-) -> List[Tuple[int, float]]:
+) -> list[tuple[int, float]]:
     """Perform semantic search using vector similarity.
 
     Args:
@@ -32,7 +33,7 @@ def semantic_search(
         metric: Distance metric ("cosine", "l2", or "dot")
         limit: Maximum number of results
         candidate_indices: Optional set of candidate indices to search (for filtering)
-        flat_vectors: Optional pre-flattened array for fast SIMD access (avoids flattening overhead)
+        flat_vectors: Pre-flattened array for fast SIMD (avoids overhead)
 
     Returns:
         List of (doc_index, similarity_score) tuples, sorted by score
@@ -66,9 +67,9 @@ def semantic_search(
             dim = len(query_vector)
             subset_flat = []
             for idx in search_indices:
-                subset_flat.extend(flat_vectors[idx * dim:(idx + 1) * dim])
+                subset_flat.extend(flat_vectors[idx * dim : (idx + 1) * dim])
             scores = _compute_similarities_simd_flat(
-                query_vector, array.array('f', subset_flat), metric
+                query_vector, array.array("f", subset_flat), metric
             )
         else:
             # Fallback: flatten on-the-fly (for backward compatibility)
@@ -89,8 +90,8 @@ def semantic_search(
 
 
 def _compute_similarities_simd(
-    query: List[float], vectors: List[List[float]], metric: str
-) -> List[float]:
+    query: list[float], vectors: list[list[float]], metric: str
+) -> list[float]:
     """Compute similarities using SIMD C extension.
 
     Args:
@@ -122,8 +123,8 @@ def _compute_similarities_simd(
 
 
 def _compute_similarities_simd_flat(
-    query: List[float], flat_vectors: array.array, metric: str
-) -> List[float]:
+    query: list[float], flat_vectors: array.array, metric: str
+) -> list[float]:
     """Compute similarities using SIMD C extension with pre-flattened vectors.
 
     Args:
@@ -149,8 +150,8 @@ def _compute_similarities_simd_flat(
 
 
 def _compute_similarities_python(
-    query: List[float], vectors: List[List[float]], metric: str
-) -> List[float]:
+    query: list[float], vectors: list[list[float]], metric: str
+) -> list[float]:
     """Compute similarities using pure Python (fallback).
 
     Args:
@@ -178,9 +179,9 @@ def _compute_similarities_python(
     return scores
 
 
-def _cosine_similarity_python(vec1: List[float], vec2: List[float]) -> float:
+def _cosine_similarity_python(vec1: list[float], vec2: list[float]) -> float:
     """Cosine similarity in pure Python."""
-    dot = sum(a * b for a, b in zip(vec1, vec2))
+    dot = sum(a * b for a, b in zip(vec1, vec2, strict=True))
     norm1 = sum(a * a for a in vec1) ** 0.5
     norm2 = sum(b * b for b in vec2) ** 0.5
 
@@ -188,11 +189,11 @@ def _cosine_similarity_python(vec1: List[float], vec2: List[float]) -> float:
     return dot / denom if denom > 1e-8 else 0.0
 
 
-def _l2_distance_python(vec1: List[float], vec2: List[float]) -> float:
+def _l2_distance_python(vec1: list[float], vec2: list[float]) -> float:
     """L2 distance in pure Python."""
-    return sum((a - b) ** 2 for a, b in zip(vec1, vec2)) ** 0.5
+    return sum((a - b) ** 2 for a, b in zip(vec1, vec2, strict=True)) ** 0.5
 
 
-def _dot_product_python(vec1: List[float], vec2: List[float]) -> float:
+def _dot_product_python(vec1: list[float], vec2: list[float]) -> float:
     """Dot product in pure Python."""
-    return sum(a * b for a, b in zip(vec1, vec2))
+    return sum(a * b for a, b in zip(vec1, vec2, strict=True))

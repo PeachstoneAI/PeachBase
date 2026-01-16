@@ -1,5 +1,7 @@
 """Unit tests for storage (save/load)."""
-import pytest
+
+import contextlib
+
 import peachbase
 
 
@@ -14,6 +16,7 @@ def test_save_and_load(temp_db_path, sample_documents):
     # Load in new connection using classmethod
     db2 = peachbase.connect(temp_db_path)
     from peachbase.collection import Collection
+
     collection2 = Collection.load("test", db2)
 
     # Verify data persisted
@@ -39,22 +42,17 @@ def test_save_preserves_search_indices(temp_db_path, sample_documents, query_vec
     # Load in new connection
     db2 = peachbase.connect(temp_db_path)
     from peachbase.collection import Collection
+
     collection2 = Collection.load("test", db2)
 
     # Test semantic search works
     results_semantic = collection2.search(
-        query_vector=query_vector,
-        mode="semantic",
-        limit=3
+        query_vector=query_vector, mode="semantic", limit=3
     )
     assert len(results_semantic.to_list()) > 0
 
     # Test lexical search works
-    results_lexical = collection2.search(
-        query_text="learning",
-        mode="lexical",
-        limit=3
-    )
+    results_lexical = collection2.search(query_text="learning", mode="lexical", limit=3)
     assert len(results_lexical.to_list()) > 0
 
 
@@ -89,6 +87,7 @@ def test_load_updates_collection_state(temp_db_path, sample_documents):
     # Load in new connection - Collection.load() returns fully loaded collection
     db2 = peachbase.connect(temp_db_path)
     from peachbase.collection import Collection
+
     collection2 = Collection.load("test", db2)
 
     # Should have loaded all data
@@ -119,6 +118,7 @@ def test_save_after_delete(temp_db_path, sample_documents):
 
     # Reload and verify document is deleted
     from peachbase.collection import Collection
+
     collection2 = Collection.load("test", db)
     assert collection2.size == len(sample_documents) - 1
 
@@ -132,29 +132,24 @@ def test_load_nonexistent_collection(temp_db_path):
     collection = db.create_collection("test", dimension=384)
 
     # Try to load before saving - should handle gracefully or raise error
-    try:
+    with contextlib.suppress(FileNotFoundError, KeyError):
         # Collection is already loaded via Collection.load classmethod
         # If it succeeds, collection should still be empty
         assert collection.size == 0
-    except (FileNotFoundError, KeyError):
-        # Or it may raise an error, which is also acceptable
-        pass
 
 
 def test_save_preserves_vector_dimension(temp_db_path):
     """Test that save preserves vector dimension."""
     db1 = peachbase.connect(temp_db_path)
     collection1 = db1.create_collection("test", dimension=768)
-    collection1.add([{
-        "id": "doc1",
-        "text": "Test",
-        "vector": [0.1] * 768,
-        "metadata": {}
-    }])
+    collection1.add(
+        [{"id": "doc1", "text": "Test", "vector": [0.1] * 768, "metadata": {}}]
+    )
     collection1.save()
 
     db2 = peachbase.connect(temp_db_path)
     from peachbase.collection import Collection
+
     collection2 = Collection.load("test", db2)
 
     assert collection2.dimension == 768
@@ -165,19 +160,21 @@ def test_save_preserves_metadata_types(temp_db_path):
     db = peachbase.connect(temp_db_path)
     collection = db.create_collection("test", dimension=384)
 
-    docs = [{
-        "id": "doc1",
-        "text": "Test document",
-        "vector": [0.1] * 384,
-        "metadata": {
-            "string": "value",
-            "int": 42,
-            "float": 3.14,
-            "bool": True,
-            "list": [1, 2, 3],
-            "dict": {"nested": "value"}
+    docs = [
+        {
+            "id": "doc1",
+            "text": "Test document",
+            "vector": [0.1] * 384,
+            "metadata": {
+                "string": "value",
+                "int": 42,
+                "float": 3.14,
+                "bool": True,
+                "list": [1, 2, 3],
+                "dict": {"nested": "value"},
+            },
         }
-    }]
+    ]
     collection.add(docs)
     collection.save()
 
@@ -209,6 +206,7 @@ def test_concurrent_collections_save_independently(temp_db_path, sample_document
 
     # Reload and verify each maintained its own data
     from peachbase.collection import Collection
+
     col1_loaded = Collection.load("collection1", db)
     col2_loaded = Collection.load("collection2", db)
 
@@ -234,7 +232,7 @@ def test_save_large_collection(temp_db_path):
             "id": f"doc{i}",
             "text": f"Document {i}",
             "vector": [i * 0.001] * 384,
-            "metadata": {"index": i}
+            "metadata": {"index": i},
         }
         for i in range(1000)
     ]
@@ -262,6 +260,7 @@ def test_save_without_prior_load(temp_db_path, sample_documents):
     # Verify by loading in new instance
     db2 = peachbase.connect(temp_db_path)
     from peachbase.collection import Collection
+
     collection2 = Collection.load("test", db2)
 
     assert collection2.size == len(sample_documents)

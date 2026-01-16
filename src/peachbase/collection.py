@@ -1,7 +1,13 @@
 """Collection class for managing documents and search operations."""
 
-from typing import Optional, Any, Dict, List, Literal
+from __future__ import annotations
+
 from array import array
+from typing import TYPE_CHECKING, Any, Literal
+
+if TYPE_CHECKING:
+    from peachbase.database import Database
+    from peachbase.query import Query
 
 
 class Collection:
@@ -19,7 +25,7 @@ class Collection:
     Examples:
         >>> collection = db.create_collection("docs", dimension=384)
         >>> collection.add([
-        ...     {"id": "1", "text": "Hello", "vector": [...], "metadata": {"type": "greeting"}}
+        ...     {"id": "1", "text": "Hello", "vector": [...], "metadata": {...}}
         ... ])
         >>> results = collection.search(query_vector=[...], limit=10)
     """
@@ -28,8 +34,8 @@ class Collection:
         self,
         name: str,
         dimension: int,
-        database: "Database",
-        metadata: Optional[Dict[str, Any]] = None,
+        database: Database,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Initialize a collection.
 
@@ -45,16 +51,16 @@ class Collection:
         self.metadata = metadata or {}
 
         # Storage for documents
-        self._documents: List[Dict[str, Any]] = []
-        self._vectors: List[List[float]] = []
-        self._doc_index: Dict[str, int] = {}
+        self._documents: list[dict[str, Any]] = []
+        self._vectors: list[list[float]] = []
+        self._doc_index: dict[str, int] = {}
 
         # Pre-flattened vectors for fast SIMD access (avoids flattening on every search)
-        self._flat_vectors: Optional[array] = None
+        self._flat_vectors: array | None = None
         self._flat_vectors_dirty = True
 
         # Search indices (will be built when needed)
-        self._bm25_index: Optional[Any] = None
+        self._bm25_index: Any | None = None
         self._is_dirty = True  # Flag to track if indices need rebuilding
 
     @property
@@ -64,13 +70,13 @@ class Collection:
 
     def add(
         self,
-        documents: List[Dict[str, Any]],
-        vectors: Optional[List[List[float]]] = None,
+        documents: list[dict[str, Any]],
+        vectors: list[list[float]] | None = None,
     ) -> None:
         """Add documents to the collection.
 
         Args:
-            documents: List of document dictionaries with 'id', 'text', optionally 'vector' and 'metadata'
+            documents: List of dicts with 'id', 'text', optional 'vector'/'metadata'
             vectors: Optional separate list of vectors if not included in documents
 
         Examples:
@@ -119,7 +125,7 @@ class Collection:
         self._is_dirty = True
         self._flat_vectors_dirty = True
 
-    def get(self, doc_id: str) -> Optional[Dict[str, Any]]:
+    def get(self, doc_id: str) -> dict[str, Any] | None:
         """Get a document by ID.
 
         Args:
@@ -172,21 +178,21 @@ class Collection:
             flat_data = []
             for vec in self._vectors:
                 flat_data.extend(vec)
-            self._flat_vectors = array('f', flat_data)
+            self._flat_vectors = array("f", flat_data)
             self._flat_vectors_dirty = False
 
         return self._flat_vectors
 
     def search(
         self,
-        query_text: Optional[str] = None,
-        query_vector: Optional[List[float]] = None,
+        query_text: str | None = None,
+        query_vector: list[float] | None = None,
         mode: Literal["lexical", "semantic", "hybrid"] = "semantic",
         metric: Literal["cosine", "l2", "dot"] = "cosine",
         limit: int = 10,
-        filter: Optional[Dict[str, Any]] = None,
+        filter: dict[str, Any] | None = None,
         alpha: float = 0.5,
-    ) -> "Query":
+    ) -> Query:
         """Search the collection.
 
         Args:
@@ -245,19 +251,21 @@ class Collection:
 
     def save(self) -> None:
         """Save collection to disk or S3."""
-        from peachbase.storage.writer import write_collection, upload_collection_to_s3
+        from peachbase.storage.writer import upload_collection_to_s3, write_collection
 
         path = self.database.get_collection_path(self.name)
 
         if self.database.is_s3:
             # Upload to S3
-            upload_collection_to_s3(self, self.database.bucket, f"{self.database.prefix}/{self.name}.pdb")
+            upload_collection_to_s3(
+                self, self.database.bucket, f"{self.database.prefix}/{self.name}.pdb"
+            )
         else:
             # Save to local disk
             write_collection(self, path)
 
     @classmethod
-    def load(cls, name: str, database: "Database") -> "Collection":
+    def load(cls, name: str, database: Database) -> Collection:
         """Load collection from disk or S3.
 
         Args:
@@ -267,8 +275,8 @@ class Collection:
         Returns:
             Loaded collection instance
         """
-        from peachbase.storage.reader import read_collection, load_collection_from_s3
         from peachbase.search.bm25 import BM25Index
+        from peachbase.storage.reader import load_collection_from_s3, read_collection
 
         path = database.get_collection_path(name)
 
@@ -282,13 +290,18 @@ class Collection:
 
         # Create collection instance
         collection = cls(
-            name=name, dimension=collection_data["dimension"], database=database, metadata={}
+            name=name,
+            dimension=collection_data["dimension"],
+            database=database,
+            metadata={},
         )
 
         # Restore documents and vectors
         collection._documents = collection_data["documents"]
         collection._vectors = collection_data["vectors"]
-        collection._doc_index = {doc["id"]: i for i, doc in enumerate(collection._documents)}
+        collection._doc_index = {
+            doc["id"]: i for i, doc in enumerate(collection._documents)
+        }
 
         # Restore BM25 index if available
         if bm25_index_data:

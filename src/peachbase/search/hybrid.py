@@ -3,27 +3,26 @@
 Implements Reciprocal Rank Fusion (RRF) for combining results.
 """
 
-from typing import List, Tuple, Dict, Literal
-from collections import defaultdict
+from typing import Literal
 
 
 def hybrid_search_rrf(
-    lexical_results: List[Tuple[str, float]],
-    semantic_results: List[Tuple[int, float]],
-    doc_id_map: Dict[int, str],
+    lexical_results: list[tuple[str, float]],
+    semantic_results: list[tuple[int, float]],
+    doc_id_map: dict[int, str],
     alpha: float = 0.5,
     k: int = 60,
     limit: int = 10,
-) -> List[Tuple[str, float]]:
+) -> list[tuple[str, float]]:
     """Combine lexical and semantic search results using Reciprocal Rank Fusion (RRF).
 
-    RRF formula: score(d) = alpha * (1 / (k + rank_lexical(d))) + (1-alpha) * (1 / (k + rank_semantic(d)))
+    RRF: score = alpha * 1/(k+rank_lex) + (1-alpha) * 1/(k+rank_sem)
 
     Args:
         lexical_results: BM25 results as list of (doc_id, score)
         semantic_results: Semantic results as list of (doc_index, score)
         doc_id_map: Mapping from doc_index to doc_id
-        alpha: Weight for lexical vs semantic (0=semantic only, 1=lexical only, default=0.5)
+        alpha: Lexical weight (0=semantic, 1=lexical, default 0.5)
         k: RRF parameter (default=60, from literature)
         limit: Maximum number of results
 
@@ -35,7 +34,9 @@ def hybrid_search_rrf(
 
     # Build rank dictionaries
     lexical_ranks = {doc_id: rank for rank, (doc_id, _) in enumerate(lexical_results)}
-    semantic_ranks = {doc_id: rank for rank, (doc_id, _) in enumerate(semantic_results_ids)}
+    semantic_ranks = {
+        doc_id: rank for rank, (doc_id, _) in enumerate(semantic_results_ids)
+    }
 
     # Get all unique doc_ids
     all_doc_ids = set(lexical_ranks.keys()) | set(semantic_ranks.keys())
@@ -61,12 +62,12 @@ def hybrid_search_rrf(
 
 
 def hybrid_search_weighted(
-    lexical_results: List[Tuple[str, float]],
-    semantic_results: List[Tuple[int, float]],
-    doc_id_map: Dict[int, str],
+    lexical_results: list[tuple[str, float]],
+    semantic_results: list[tuple[int, float]],
+    doc_id_map: dict[int, str],
     alpha: float = 0.5,
     limit: int = 10,
-) -> List[Tuple[str, float]]:
+) -> list[tuple[str, float]]:
     """Combine lexical and semantic search results using weighted score fusion.
 
     Normalizes scores to [0, 1] range and combines with alpha weighting.
@@ -76,7 +77,7 @@ def hybrid_search_weighted(
         lexical_results: BM25 results as list of (doc_id, score)
         semantic_results: Semantic results as list of (doc_index, score)
         doc_id_map: Mapping from doc_index to doc_id
-        alpha: Weight for lexical vs semantic (0=semantic only, 1=lexical only, default=0.5)
+        alpha: Lexical weight (0=semantic, 1=lexical, default 0.5)
         limit: Maximum number of results
 
     Returns:
@@ -88,8 +89,12 @@ def hybrid_search_weighted(
     # Normalize lexical scores
     lexical_scores = {}
     if lexical_results:
-        max_lexical = max(score for _, score in lexical_results) if lexical_results else 1.0
-        min_lexical = min(score for _, score in lexical_results) if lexical_results else 0.0
+        max_lexical = (
+            max(score for _, score in lexical_results) if lexical_results else 1.0
+        )
+        min_lexical = (
+            min(score for _, score in lexical_results) if lexical_results else 0.0
+        )
         range_lexical = max_lexical - min_lexical
 
         for doc_id, score in lexical_results:
@@ -130,14 +135,14 @@ def hybrid_search_weighted(
 
 
 def hybrid_search(
-    lexical_results: List[Tuple[str, float]],
-    semantic_results: List[Tuple[int, float]],
-    doc_id_map: Dict[int, str],
+    lexical_results: list[tuple[str, float]],
+    semantic_results: list[tuple[int, float]],
+    doc_id_map: dict[int, str],
     method: Literal["rrf", "weighted"] = "rrf",
     alpha: float = 0.5,
     k: int = 60,
     limit: int = 10,
-) -> List[Tuple[str, float]]:
+) -> list[tuple[str, float]]:
     """Perform hybrid search combining lexical and semantic results.
 
     Args:

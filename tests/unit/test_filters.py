@@ -1,5 +1,5 @@
 """Unit tests for metadata filtering."""
-import pytest
+
 import peachbase
 
 
@@ -10,10 +10,7 @@ def test_filter_exact_match(temp_db_path, sample_documents, query_vector):
     collection.add(sample_documents)
 
     results = collection.search(
-        query_vector=query_vector,
-        mode="semantic",
-        filter={"category": "ai"},
-        limit=10
+        query_vector=query_vector, mode="semantic", filter={"category": "ai"}, limit=10
     )
 
     results_list = results.to_list()
@@ -33,7 +30,7 @@ def test_filter_greater_than_or_equal(temp_db_path, sample_documents, query_vect
         query_vector=query_vector,
         mode="semantic",
         filter={"year": {"$gte": 2024}},
-        limit=10
+        limit=10,
     )
 
     results_list = results.to_list()
@@ -52,7 +49,7 @@ def test_filter_less_than_or_equal(temp_db_path, sample_documents, query_vector)
         query_vector=query_vector,
         mode="semantic",
         filter={"year": {"$lte": 2023}},
-        limit=10
+        limit=10,
     )
 
     results_list = results.to_list()
@@ -71,7 +68,7 @@ def test_filter_greater_than(temp_db_path, sample_documents, query_vector):
         query_vector=query_vector,
         mode="semantic",
         filter={"year": {"$gt": 2023}},
-        limit=10
+        limit=10,
     )
 
     results_list = results.to_list()
@@ -90,7 +87,7 @@ def test_filter_less_than(temp_db_path, sample_documents, query_vector):
         query_vector=query_vector,
         mode="semantic",
         filter={"year": {"$lt": 2024}},
-        limit=10
+        limit=10,
     )
 
     results_list = results.to_list()
@@ -109,7 +106,7 @@ def test_filter_in_operator(temp_db_path, sample_documents, query_vector):
         query_vector=query_vector,
         mode="semantic",
         filter={"category": {"$in": ["ai", "nlp"]}},
-        limit=10
+        limit=10,
     )
 
     results_list = results.to_list()
@@ -128,7 +125,7 @@ def test_filter_not_equal(temp_db_path, sample_documents, query_vector):
         query_vector=query_vector,
         mode="semantic",
         filter={"category": {"$ne": "ai"}},
-        limit=10
+        limit=10,
     )
 
     results_list = results.to_list()
@@ -148,7 +145,7 @@ def test_filter_not_in(temp_db_path, sample_documents, query_vector):
         query_vector=query_vector,
         mode="semantic",
         filter={"category": {"$nin": ["ai", "nlp"]}},
-        limit=10
+        limit=10,
     )
 
     results_list = results.to_list()
@@ -167,14 +164,14 @@ def test_filter_exists_true(temp_db_path, query_vector):
             "id": "doc1",
             "text": "Document with optional field",
             "vector": [0.1] * 384,
-            "metadata": {"category": "ai", "priority": 1}
+            "metadata": {"category": "ai", "priority": 1},
         },
         {
             "id": "doc2",
             "text": "Document without optional field",
             "vector": [0.2] * 384,
-            "metadata": {"category": "nlp"}
-        }
+            "metadata": {"category": "nlp"},
+        },
     ]
     collection.add(docs)
 
@@ -182,7 +179,7 @@ def test_filter_exists_true(temp_db_path, query_vector):
         query_vector=query_vector,
         mode="semantic",
         filter={"priority": {"$exists": True}},
-        limit=10
+        limit=10,
     )
 
     results_list = results.to_list()
@@ -202,14 +199,14 @@ def test_filter_exists_false(temp_db_path, query_vector):
             "id": "doc1",
             "text": "Document with optional field",
             "vector": [0.1] * 384,
-            "metadata": {"category": "ai", "priority": 1}
+            "metadata": {"category": "ai", "priority": 1},
         },
         {
             "id": "doc2",
             "text": "Document without optional field",
             "vector": [0.2] * 384,
-            "metadata": {"category": "nlp"}
-        }
+            "metadata": {"category": "nlp"},
+        },
     ]
     collection.add(docs)
 
@@ -217,7 +214,7 @@ def test_filter_exists_false(temp_db_path, query_vector):
         query_vector=query_vector,
         mode="semantic",
         filter={"priority": {"$exists": False}},
-        limit=10
+        limit=10,
     )
 
     results_list = results.to_list()
@@ -237,7 +234,7 @@ def test_filter_not_operator(temp_db_path, sample_documents, query_vector):
         query_vector=query_vector,
         mode="semantic",
         filter={"$not": {"category": "ai"}},
-        limit=10
+        limit=10,
     )
 
     results_list = results.to_list()
@@ -257,7 +254,7 @@ def test_filter_not_with_comparison(temp_db_path, sample_documents, query_vector
         query_vector=query_vector,
         mode="semantic",
         filter={"$not": {"year": {"$gte": 2024}}},
-        limit=10
+        limit=10,
     )
 
     results_list = results.to_list()
@@ -276,7 +273,7 @@ def test_filter_and_implicit(temp_db_path, sample_documents, query_vector):
         query_vector=query_vector,
         mode="semantic",
         filter={"category": "ai", "year": 2024},
-        limit=10
+        limit=10,
     )
 
     results_list = results.to_list()
@@ -297,13 +294,8 @@ def test_filter_and_explicit(temp_db_path, sample_documents, query_vector):
     results = collection.search(
         query_vector=query_vector,
         mode="semantic",
-        filter={
-            "$and": [
-                {"category": "ai"},
-                {"year": 2024}
-            ]
-        },
-        limit=10
+        filter={"$and": [{"category": "ai"}, {"year": 2024}]},
+        limit=10,
     )
 
     results_list = results.to_list()
@@ -324,22 +316,14 @@ def test_filter_or(temp_db_path, sample_documents, query_vector):
     results = collection.search(
         query_vector=query_vector,
         mode="semantic",
-        filter={
-            "$or": [
-                {"category": "cv"},
-                {"category": "rl"}
-            ]
-        },
-        limit=10
+        filter={"$or": [{"category": "cv"}, {"category": "rl"}]},
+        limit=10,
     )
 
     results_list = results.to_list()
 
     # Should only return documents with category="cv" OR category="rl"
-    assert all(
-        r["metadata"]["category"] in ["cv", "rl"]
-        for r in results_list
-    )
+    assert all(r["metadata"]["category"] in ["cv", "rl"] for r in results_list)
 
 
 def test_filter_complex_query(temp_db_path, sample_documents, query_vector):
@@ -352,17 +336,9 @@ def test_filter_complex_query(temp_db_path, sample_documents, query_vector):
         query_vector=query_vector,
         mode="semantic",
         filter={
-            "$and": [
-                {
-                    "$or": [
-                        {"category": "ai"},
-                        {"category": "nlp"}
-                    ]
-                },
-                {"year": 2024}
-            ]
+            "$and": [{"$or": [{"category": "ai"}, {"category": "nlp"}]}, {"year": 2024}]
         },
-        limit=10
+        limit=10,
     )
 
     results_list = results.to_list()
@@ -384,7 +360,7 @@ def test_filter_no_matches(temp_db_path, sample_documents, query_vector):
         query_vector=query_vector,
         mode="semantic",
         filter={"category": "nonexistent"},
-        limit=10
+        limit=10,
     )
 
     assert len(results.to_list()) == 0
@@ -397,10 +373,7 @@ def test_filter_with_lexical_search(temp_db_path, sample_documents):
     collection.add(sample_documents)
 
     results = collection.search(
-        query_text="learning",
-        mode="lexical",
-        filter={"category": "ai"},
-        limit=10
+        query_text="learning", mode="lexical", filter={"category": "ai"}, limit=10
     )
 
     results_list = results.to_list()
@@ -420,7 +393,7 @@ def test_filter_with_hybrid_search(temp_db_path, sample_documents, query_vector)
         query_vector=query_vector,
         mode="hybrid",
         filter={"year": 2024},
-        limit=10
+        limit=10,
     )
 
     results_list = results.to_list()
@@ -443,23 +416,20 @@ def test_filter_affects_ranking(temp_db_path, query_vector):
             "id": "doc1",
             "text": "Document 1",
             "vector": [0.9] * 384,  # Poor match
-            "metadata": {"category": "ai"}
+            "metadata": {"category": "ai"},
         },
         {
             "id": "doc2",
             "text": "Document 2",
             "vector": query_vector,  # Perfect match!
-            "metadata": {"category": "other"}
-        }
+            "metadata": {"category": "other"},
+        },
     ]
     collection.add(docs)
 
     # Filter for category="ai"
     results = collection.search(
-        query_vector=query_vector,
-        mode="semantic",
-        filter={"category": "ai"},
-        limit=10
+        query_vector=query_vector, mode="semantic", filter={"category": "ai"}, limit=10
     )
 
     results_list = results.to_list()
@@ -475,10 +445,7 @@ def test_filter_empty_collection(temp_db_path, query_vector):
     collection = db.create_collection("test", dimension=384)
 
     results = collection.search(
-        query_vector=query_vector,
-        mode="semantic",
-        filter={"category": "ai"},
-        limit=10
+        query_vector=query_vector, mode="semantic", filter={"category": "ai"}, limit=10
     )
 
     assert len(results.to_list()) == 0
@@ -494,22 +461,19 @@ def test_filter_missing_metadata_field(temp_db_path, query_vector):
             "id": "doc1",
             "text": "Document with category",
             "vector": [0.1] * 384,
-            "metadata": {"category": "ai"}
+            "metadata": {"category": "ai"},
         },
         {
             "id": "doc2",
             "text": "Document without category",
             "vector": [0.2] * 384,
-            "metadata": {}
-        }
+            "metadata": {},
+        },
     ]
     collection.add(docs)
 
     results = collection.search(
-        query_vector=query_vector,
-        mode="semantic",
-        filter={"category": "ai"},
-        limit=10
+        query_vector=query_vector, mode="semantic", filter={"category": "ai"}, limit=10
     )
 
     results_list = results.to_list()
@@ -529,23 +493,20 @@ def test_filter_with_none_value(temp_db_path, query_vector):
             "id": "doc1",
             "text": "Document 1",
             "vector": [0.1] * 384,
-            "metadata": {"status": None}
+            "metadata": {"status": None},
         },
         {
             "id": "doc2",
             "text": "Document 2",
             "vector": [0.2] * 384,
-            "metadata": {"status": "active"}
-        }
+            "metadata": {"status": "active"},
+        },
     ]
     collection.add(docs)
 
     # Filter for None value
     results = collection.search(
-        query_vector=query_vector,
-        mode="semantic",
-        filter={"status": None},
-        limit=10
+        query_vector=query_vector, mode="semantic", filter={"status": None}, limit=10
     )
 
     results_list = results.to_list()

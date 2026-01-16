@@ -6,8 +6,8 @@ capabilities with minimal dependencies and fast cold starts for serverless envir
 """
 
 from peachbase._version import __version__
-from peachbase.database import Database, connect
 from peachbase.collection import Collection
+from peachbase.database import Database, connect
 
 # Query will be implemented in Phase 5
 # from peachbase.query import Query

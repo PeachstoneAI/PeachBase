@@ -1,5 +1,5 @@
 """Unit tests for SIMD C extensions."""
-import pytest
+
 import array
 import math
 
@@ -7,6 +7,7 @@ import math
 def test_simd_module_imports():
     """Test that SIMD module can be imported."""
     from peachbase import _simd
+
     assert _simd is not None
 
 
@@ -38,8 +39,8 @@ def test_cosine_similarity_basic():
     from peachbase import _simd
 
     # Simple vectors
-    vec1 = array.array('f', [1.0, 0.0, 0.0])
-    vec2 = array.array('f', [1.0, 0.0, 0.0])
+    vec1 = array.array("f", [1.0, 0.0, 0.0])
+    vec2 = array.array("f", [1.0, 0.0, 0.0])
 
     result = _simd.cosine_similarity(vec1, vec2)
 
@@ -51,8 +52,8 @@ def test_cosine_similarity_orthogonal():
     """Test cosine similarity of orthogonal vectors."""
     from peachbase import _simd
 
-    vec1 = array.array('f', [1.0, 0.0, 0.0])
-    vec2 = array.array('f', [0.0, 1.0, 0.0])
+    vec1 = array.array("f", [1.0, 0.0, 0.0])
+    vec2 = array.array("f", [0.0, 1.0, 0.0])
 
     result = _simd.cosine_similarity(vec1, vec2)
 
@@ -64,8 +65,8 @@ def test_cosine_similarity_opposite():
     """Test cosine similarity of opposite vectors."""
     from peachbase import _simd
 
-    vec1 = array.array('f', [1.0, 0.0, 0.0])
-    vec2 = array.array('f', [-1.0, 0.0, 0.0])
+    vec1 = array.array("f", [1.0, 0.0, 0.0])
+    vec2 = array.array("f", [-1.0, 0.0, 0.0])
 
     result = _simd.cosine_similarity(vec1, vec2)
 
@@ -77,8 +78,8 @@ def test_l2_distance_basic():
     """Test basic L2 distance."""
     from peachbase import _simd
 
-    vec1 = array.array('f', [0.0, 0.0, 0.0])
-    vec2 = array.array('f', [3.0, 4.0, 0.0])
+    vec1 = array.array("f", [0.0, 0.0, 0.0])
+    vec2 = array.array("f", [3.0, 4.0, 0.0])
 
     result = _simd.l2_distance(vec1, vec2)
 
@@ -90,8 +91,8 @@ def test_l2_distance_identical():
     """Test L2 distance of identical vectors."""
     from peachbase import _simd
 
-    vec1 = array.array('f', [1.0, 2.0, 3.0])
-    vec2 = array.array('f', [1.0, 2.0, 3.0])
+    vec1 = array.array("f", [1.0, 2.0, 3.0])
+    vec2 = array.array("f", [1.0, 2.0, 3.0])
 
     result = _simd.l2_distance(vec1, vec2)
 
@@ -103,8 +104,8 @@ def test_dot_product_basic():
     """Test basic dot product."""
     from peachbase import _simd
 
-    vec1 = array.array('f', [1.0, 2.0, 3.0])
-    vec2 = array.array('f', [4.0, 5.0, 6.0])
+    vec1 = array.array("f", [1.0, 2.0, 3.0])
+    vec2 = array.array("f", [4.0, 5.0, 6.0])
 
     result = _simd.dot_product(vec1, vec2)
 
@@ -117,8 +118,8 @@ def test_dot_product_zero():
     """Test dot product with zero vector."""
     from peachbase import _simd
 
-    vec1 = array.array('f', [1.0, 2.0, 3.0])
-    vec2 = array.array('f', [0.0, 0.0, 0.0])
+    vec1 = array.array("f", [1.0, 2.0, 3.0])
+    vec2 = array.array("f", [0.0, 0.0, 0.0])
 
     result = _simd.dot_product(vec1, vec2)
 
@@ -129,14 +130,23 @@ def test_batch_cosine_similarity():
     """Test batch cosine similarity."""
     from peachbase import _simd
 
-    query = array.array('f', [1.0, 0.0, 0.0])
+    query = array.array("f", [1.0, 0.0, 0.0])
 
     # Create 3 vectors
-    vectors = array.array('f', [
-        1.0, 0.0, 0.0,  # Same as query
-        0.0, 1.0, 0.0,  # Orthogonal
-        -1.0, 0.0, 0.0,  # Opposite
-    ])
+    vectors = array.array(
+        "f",
+        [
+            1.0,
+            0.0,
+            0.0,  # Same as query
+            0.0,
+            1.0,
+            0.0,  # Orthogonal
+            -1.0,
+            0.0,
+            0.0,  # Opposite
+        ],
+    )
 
     results = _simd.batch_cosine_similarity(query, vectors)
 
@@ -150,14 +160,23 @@ def test_batch_l2_distance():
     """Test batch L2 distance."""
     from peachbase import _simd
 
-    query = array.array('f', [0.0, 0.0, 0.0])
+    query = array.array("f", [0.0, 0.0, 0.0])
 
     # Create 3 vectors
-    vectors = array.array('f', [
-        0.0, 0.0, 0.0,  # Same as query (distance 0)
-        3.0, 4.0, 0.0,  # Distance 5
-        1.0, 0.0, 0.0,  # Distance 1
-    ])
+    vectors = array.array(
+        "f",
+        [
+            0.0,
+            0.0,
+            0.0,  # Same as query (distance 0)
+            3.0,
+            4.0,
+            0.0,  # Distance 5
+            1.0,
+            0.0,
+            0.0,  # Distance 1
+        ],
+    )
 
     results = _simd.batch_l2_distance(query, vectors)
 
@@ -171,14 +190,23 @@ def test_batch_dot_product():
     """Test batch dot product."""
     from peachbase import _simd
 
-    query = array.array('f', [1.0, 2.0, 3.0])
+    query = array.array("f", [1.0, 2.0, 3.0])
 
     # Create 3 vectors
-    vectors = array.array('f', [
-        1.0, 2.0, 3.0,  # Same (dot = 14)
-        4.0, 5.0, 6.0,  # Different (dot = 32)
-        0.0, 0.0, 0.0,  # Zero (dot = 0)
-    ])
+    vectors = array.array(
+        "f",
+        [
+            1.0,
+            2.0,
+            3.0,  # Same (dot = 14)
+            4.0,
+            5.0,
+            6.0,  # Different (dot = 32)
+            0.0,
+            0.0,
+            0.0,  # Zero (dot = 0)
+        ],
+    )
 
     results = _simd.batch_dot_product(query, vectors)
 
@@ -193,8 +221,8 @@ def test_simd_with_384_dimensions():
     from peachbase import _simd
 
     dim = 384
-    query = array.array('f', [i * 0.01 for i in range(dim)])
-    vectors = array.array('f')
+    query = array.array("f", [i * 0.01 for i in range(dim)])
+    vectors = array.array("f")
 
     # Create 10 vectors
     for j in range(10):
@@ -218,14 +246,15 @@ def test_simd_with_384_dimensions():
 
 def test_simd_performance_vs_python():
     """Test that SIMD is faster than pure Python (smoke test)."""
-    from peachbase import _simd
     import time
+
+    from peachbase import _simd
 
     dim = 384
     n_vectors = 100
 
-    query = array.array('f', [i * 0.01 for i in range(dim)])
-    vectors = array.array('f', [i * 0.01 for _ in range(n_vectors) for i in range(dim)])
+    query = array.array("f", [i * 0.01 for i in range(dim)])
+    vectors = array.array("f", [i * 0.01 for _ in range(n_vectors) for i in range(dim)])
 
     # Time SIMD version
     start = time.time()
@@ -242,8 +271,8 @@ def test_simd_different_array_types():
     from peachbase import _simd
 
     # Should work with float array
-    vec1 = array.array('f', [1.0, 2.0, 3.0])
-    vec2 = array.array('f', [4.0, 5.0, 6.0])
+    vec1 = array.array("f", [1.0, 2.0, 3.0])
+    vec2 = array.array("f", [4.0, 5.0, 6.0])
 
     result = _simd.cosine_similarity(vec1, vec2)
     assert result is not None
@@ -258,8 +287,8 @@ def test_dimension_mismatch_handling():
 
     # If we pass wrong dimension parameter, results might be incorrect
     # This test documents the behavior (may crash or return garbage)
-    vec1 = array.array('f', [1.0, 2.0, 3.0, 4.0, 5.0])
-    vec2 = array.array('f', [1.0, 2.0, 3.0, 4.0, 5.0])
+    vec1 = array.array("f", [1.0, 2.0, 3.0, 4.0, 5.0])
+    vec2 = array.array("f", [1.0, 2.0, 3.0, 4.0, 5.0])
 
     # Correct dimension
     result_correct = _simd.cosine_similarity(vec1, vec2)
@@ -276,15 +305,15 @@ def test_empty_vectors():
     from peachbase import _simd
 
     # Single element
-    vec1 = array.array('f', [1.0])
-    vec2 = array.array('f', [1.0])
+    vec1 = array.array("f", [1.0])
+    vec2 = array.array("f", [1.0])
 
     result = _simd.cosine_similarity(vec1, vec2)
     assert abs(result - 1.0) < 1e-6
 
     # Two elements
-    vec1 = array.array('f', [1.0, 0.0])
-    vec2 = array.array('f', [1.0, 0.0])
+    vec1 = array.array("f", [1.0, 0.0])
+    vec2 = array.array("f", [1.0, 0.0])
 
     result = _simd.cosine_similarity(vec1, vec2)
     assert abs(result - 1.0) < 1e-6
@@ -297,8 +326,8 @@ def test_large_batch_operations():
     dim = 384
     n_vectors = 1000
 
-    query = array.array('f', [i * 0.01 for i in range(dim)])
-    vectors = array.array('f', [i * 0.01 for _ in range(n_vectors) for i in range(dim)])
+    query = array.array("f", [i * 0.01 for i in range(dim)])
+    vectors = array.array("f", [i * 0.01 for _ in range(n_vectors) for i in range(dim)])
 
     # Should handle 1000 vectors without issue
     results = _simd.batch_cosine_similarity(query, vectors)

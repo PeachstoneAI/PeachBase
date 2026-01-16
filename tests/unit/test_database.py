@@ -1,5 +1,7 @@
 """Unit tests for Database class."""
+
 import pytest
+
 import peachbase
 
 
@@ -100,19 +102,27 @@ def test_multiple_collections(temp_db_path):
     col2 = db.create_collection("col2", dimension=768)
 
     # Add different documents to each
-    col1.add([{
-        "id": "doc1",
-        "text": "Document in collection 1",
-        "vector": [0.1] * 384,
-        "metadata": {}
-    }])
+    col1.add(
+        [
+            {
+                "id": "doc1",
+                "text": "Document in collection 1",
+                "vector": [0.1] * 384,
+                "metadata": {},
+            }
+        ]
+    )
 
-    col2.add([{
-        "id": "doc2",
-        "text": "Document in collection 2",
-        "vector": [0.2] * 768,
-        "metadata": {}
-    }])
+    col2.add(
+        [
+            {
+                "id": "doc2",
+                "text": "Document in collection 2",
+                "vector": [0.2] * 768,
+                "metadata": {},
+            }
+        ]
+    )
 
     assert col1.size == 1
     assert col2.size == 1

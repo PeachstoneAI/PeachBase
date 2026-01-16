@@ -1,7 +1,12 @@
 """Database class for managing PeachBase collections."""
 
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from peachbase.collection import Collection
 
 
 class Database:
@@ -42,7 +47,7 @@ class Database:
             if not self.path.exists():
                 self.path.mkdir(parents=True, exist_ok=True)
 
-        self._collections: Dict[str, Any] = {}
+        self._collections: dict[str, Any] = {}
         self._metadata_file = "peachbase_metadata.json"
 
     def create_collection(
@@ -50,8 +55,8 @@ class Database:
         name: str,
         dimension: int,
         overwrite: bool = False,
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> "Collection":
+        metadata: dict[str, Any] | None = None,
+    ) -> Collection:
         """Create a new collection in the database.
 
         Args:
@@ -69,7 +74,9 @@ class Database:
         from peachbase.collection import Collection
 
         if name in self._collections and not overwrite:
-            raise ValueError(f"Collection '{name}' already exists. Use overwrite=True to replace.")
+            raise ValueError(
+                f"Collection '{name}' already exists. Use overwrite=True to replace."
+            )
 
         collection = Collection(
             name=name,
@@ -81,7 +88,7 @@ class Database:
         self._collections[name] = collection
         return collection
 
-    def open_collection(self, name: str) -> "Collection":
+    def open_collection(self, name: str) -> Collection:
         """Open an existing collection.
 
         Args:
@@ -113,6 +120,7 @@ class Database:
         if self.is_s3:
             # List .pdb files from S3
             from peachbase.utils.s3 import list_s3_collections
+
             return list_s3_collections(self.bucket, self.prefix)
         else:
             # List .pdb files in local directory
@@ -136,6 +144,7 @@ class Database:
         if self.is_s3:
             # Delete .pdb file from S3
             from peachbase.utils.s3 import delete_s3_object
+
             prefix = f"{self.prefix}/" if self.prefix else ""
             key = f"{prefix}{name}.pdb"
             delete_s3_object(self.bucket, key)
@@ -164,7 +173,7 @@ class Database:
         """String representation of the database."""
         storage_type = "S3" if self.is_s3 else "local"
         n_collections = len(self._collections)
-        return f"Database(uri='{self.uri}', type={storage_type}, collections={n_collections})"
+        return f"Database(uri='{self.uri}', type={storage_type}, n={n_collections})"
 
 
 def connect(uri: str) -> Database:

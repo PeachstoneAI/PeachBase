@@ -8,11 +8,10 @@ Format (.pdb file):
 - BM25 Index Section: Vocabulary, IDF scores, inverted index
 """
 
-import struct
-from typing import Dict, Any, Optional, BinaryIO
-from dataclasses import dataclass
 import json
-
+import struct
+from dataclasses import dataclass
+from typing import Any
 
 # Magic number for PeachBase files
 MAGIC_NUMBER = b"PCHDB001"
@@ -128,7 +127,7 @@ class VectorSection:
 class TextSection:
     """Text data section - document texts."""
 
-    texts: Dict[str, str]  # doc_id -> text
+    texts: dict[str, str]  # doc_id -> text
 
     def to_bytes(self) -> bytes:
         """Serialize texts to bytes."""
@@ -177,7 +176,7 @@ class TextSection:
 class MetadataSection:
     """Metadata section - document metadata as JSON."""
 
-    metadata: Dict[str, Dict[str, Any]]  # doc_id -> metadata dict
+    metadata: dict[str, dict[str, Any]]  # doc_id -> metadata dict
 
     def to_bytes(self) -> bytes:
         """Serialize metadata to bytes."""
@@ -226,11 +225,13 @@ class MetadataSection:
 class BM25IndexSection:
     """BM25 index section - vocabulary and inverted index."""
 
-    vocabulary: Dict[str, int]  # term -> term_id
+    vocabulary: dict[str, int]  # term -> term_id
     idf_scores: list[float]  # IDF scores indexed by term_id
     doc_lengths: list[int]  # Document lengths (token counts)
     avg_doc_len: float  # Average document length
-    inverted_index: Dict[int, list[tuple[int, int]]]  # term_id -> [(doc_idx, term_freq), ...]
+    inverted_index: dict[
+        int, list[tuple[int, int]]
+    ]  # term_id -> [(doc_idx, term_freq), ...]
 
     def to_bytes(self) -> bytes:
         """Serialize BM25 index to bytes."""

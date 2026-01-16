@@ -1,5 +1,7 @@
 """Unit tests for Collection class."""
+
 import pytest
+
 import peachbase
 
 
@@ -32,14 +34,14 @@ def test_add_duplicate_id_raises_error(temp_db_path):
         "id": "doc1",
         "text": "Original text",
         "vector": [0.1] * 384,
-        "metadata": {"version": 1}
+        "metadata": {"version": 1},
     }
 
     doc2 = {
         "id": "doc1",
         "text": "Updated text",
         "vector": [0.2] * 384,
-        "metadata": {"version": 2}
+        "metadata": {"version": 2},
     }
 
     collection.add([doc1])
@@ -64,7 +66,7 @@ def test_add_wrong_dimension_raises_error(temp_db_path):
         "id": "doc1",
         "text": "Test document",
         "vector": [0.1] * 100,  # Wrong dimension!
-        "metadata": {}
+        "metadata": {},
     }
 
     with pytest.raises(ValueError, match="dimension"):
@@ -77,28 +79,16 @@ def test_add_missing_required_fields(temp_db_path):
     collection = db.create_collection("test", dimension=384)
 
     # Missing 'text' is allowed (text is optional)
-    collection.add([{
-        "id": "doc1",
-        "vector": [0.1] * 384,
-        "metadata": {}
-    }])
+    collection.add([{"id": "doc1", "vector": [0.1] * 384, "metadata": {}}])
     assert collection.size == 1
 
     # Missing 'vector' should raise ValueError
     with pytest.raises(ValueError, match="vector"):
-        collection.add([{
-            "id": "doc2",
-            "text": "Test",
-            "metadata": {}
-        }])
+        collection.add([{"id": "doc2", "text": "Test", "metadata": {}}])
 
     # Missing 'id' should raise ValueError
     with pytest.raises(ValueError, match="id"):
-        collection.add([{
-            "text": "Test",
-            "vector": [0.1] * 384,
-            "metadata": {}
-        }])
+        collection.add([{"text": "Test", "vector": [0.1] * 384, "metadata": {}}])
 
 
 def test_get_document(temp_db_path, sample_documents):
@@ -186,11 +176,7 @@ def test_metadata_optional(temp_db_path):
     db = peachbase.connect(temp_db_path)
     collection = db.create_collection("test", dimension=384)
 
-    doc = {
-        "id": "doc1",
-        "text": "Test document",
-        "vector": [0.1] * 384
-    }
+    doc = {"id": "doc1", "text": "Test document", "vector": [0.1] * 384}
 
     collection.add([doc])
 
@@ -210,7 +196,7 @@ def test_large_batch_add(temp_db_path):
             "id": f"doc{i}",
             "text": f"Document number {i}",
             "vector": [i * 0.001] * 384,
-            "metadata": {"index": i}
+            "metadata": {"index": i},
         }
         for i in range(1000)
     ]

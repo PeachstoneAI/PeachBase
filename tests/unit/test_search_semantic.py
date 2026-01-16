@@ -1,5 +1,7 @@
 """Unit tests for semantic search."""
+
 import pytest
+
 import peachbase
 
 
@@ -9,11 +11,7 @@ def test_semantic_search_basic(temp_db_path, sample_documents, query_vector):
     collection = db.create_collection("test", dimension=384)
     collection.add(sample_documents)
 
-    results = collection.search(
-        query_vector=query_vector,
-        mode="semantic",
-        limit=3
-    )
+    results = collection.search(query_vector=query_vector, mode="semantic", limit=3)
 
     results_list = results.to_list()
     assert len(results_list) <= 3
@@ -27,10 +25,7 @@ def test_semantic_search_cosine_metric(temp_db_path, sample_documents, query_vec
     collection.add(sample_documents)
 
     results = collection.search(
-        query_vector=query_vector,
-        mode="semantic",
-        metric="cosine",
-        limit=5
+        query_vector=query_vector, mode="semantic", metric="cosine", limit=5
     )
 
     results_list = results.to_list()
@@ -48,10 +43,7 @@ def test_semantic_search_l2_metric(temp_db_path, sample_documents, query_vector)
     collection.add(sample_documents)
 
     results = collection.search(
-        query_vector=query_vector,
-        mode="semantic",
-        metric="l2",
-        limit=5
+        query_vector=query_vector, mode="semantic", metric="l2", limit=5
     )
 
     results_list = results.to_list()
@@ -69,10 +61,7 @@ def test_semantic_search_dot_metric(temp_db_path, sample_documents, query_vector
     collection.add(sample_documents)
 
     results = collection.search(
-        query_vector=query_vector,
-        mode="semantic",
-        metric="dot",
-        limit=5
+        query_vector=query_vector, mode="semantic", metric="dot", limit=5
     )
 
     results_list = results.to_list()
@@ -87,9 +76,7 @@ def test_semantic_search_limit(temp_db_path, sample_documents, query_vector):
 
     for limit in [1, 2, 3, 10]:
         results = collection.search(
-            query_vector=query_vector,
-            mode="semantic",
-            limit=limit
+            query_vector=query_vector, mode="semantic", limit=limit
         )
         results_list = results.to_list()
         assert len(results_list) == min(limit, len(sample_documents))
@@ -102,10 +89,7 @@ def test_semantic_search_results_sorted(temp_db_path, sample_documents, query_ve
     collection.add(sample_documents)
 
     results = collection.search(
-        query_vector=query_vector,
-        mode="semantic",
-        metric="cosine",
-        limit=5
+        query_vector=query_vector, mode="semantic", metric="cosine", limit=5
     )
 
     results_list = results.to_list()
@@ -135,11 +119,7 @@ def test_semantic_search_wrong_dimension(temp_db_path, sample_documents):
 
     # Note: Implementation doesn't validate dimensions, causes IndexError
     with pytest.raises(IndexError):
-        collection.search(
-            query_vector=wrong_dim_vector,
-            mode="semantic",
-            limit=5
-        )
+        collection.search(query_vector=wrong_dim_vector, mode="semantic", limit=5)
 
 
 def test_semantic_search_empty_collection(temp_db_path, query_vector):
@@ -147,26 +127,20 @@ def test_semantic_search_empty_collection(temp_db_path, query_vector):
     db = peachbase.connect(temp_db_path)
     collection = db.create_collection("test", dimension=384)
 
-    results = collection.search(
-        query_vector=query_vector,
-        mode="semantic",
-        limit=5
-    )
+    results = collection.search(query_vector=query_vector, mode="semantic", limit=5)
 
     assert len(results.to_list()) == 0
 
 
-def test_semantic_search_result_contains_document_data(temp_db_path, sample_documents, query_vector):
+def test_semantic_search_result_contains_document_data(
+    temp_db_path, sample_documents, query_vector
+):
     """Test that results contain complete document data."""
     db = peachbase.connect(temp_db_path)
     collection = db.create_collection("test", dimension=384)
     collection.add(sample_documents)
 
-    results = collection.search(
-        query_vector=query_vector,
-        mode="semantic",
-        limit=1
-    )
+    results = collection.search(query_vector=query_vector, mode="semantic", limit=1)
 
     result = results.to_list()[0]
 
@@ -184,11 +158,7 @@ def test_semantic_search_iterator(temp_db_path, sample_documents, query_vector):
     collection = db.create_collection("test", dimension=384)
     collection.add(sample_documents)
 
-    results = collection.search(
-        query_vector=query_vector,
-        mode="semantic",
-        limit=3
-    )
+    results = collection.search(query_vector=query_vector, mode="semantic", limit=3)
 
     # Test iteration
     count = 0
@@ -206,11 +176,7 @@ def test_semantic_search_length(temp_db_path, sample_documents, query_vector):
     collection = db.create_collection("test", dimension=384)
     collection.add(sample_documents)
 
-    results = collection.search(
-        query_vector=query_vector,
-        mode="semantic",
-        limit=3
-    )
+    results = collection.search(query_vector=query_vector, mode="semantic", limit=3)
 
     assert len(results) == 3
 
@@ -223,10 +189,7 @@ def test_semantic_search_invalid_metric(temp_db_path, sample_documents, query_ve
 
     with pytest.raises(ValueError, match="metric"):
         collection.search(
-            query_vector=query_vector,
-            mode="semantic",
-            metric="invalid",
-            limit=5
+            query_vector=query_vector, mode="semantic", metric="invalid", limit=5
         )
 
 
@@ -241,17 +204,13 @@ def test_semantic_search_large_collection(temp_db_path, query_vector):
             "id": f"doc{i}",
             "text": f"Document {i}",
             "vector": [i * 0.001 + j * 0.0001 for j in range(384)],
-            "metadata": {"index": i}
+            "metadata": {"index": i},
         }
         for i in range(1000)
     ]
     collection.add(docs)
 
-    results = collection.search(
-        query_vector=query_vector,
-        mode="semantic",
-        limit=10
-    )
+    results = collection.search(query_vector=query_vector, mode="semantic", limit=10)
 
     assert len(results) == 10
     # Should find results even in large collection

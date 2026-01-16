@@ -5,9 +5,7 @@ Suitable for AWS Lambda environments.
 """
 
 import re
-from typing import List, Set
 import unicodedata
-
 
 # Common English stopwords (minimal set)
 DEFAULT_STOPWORDS = {
@@ -51,7 +49,7 @@ class Tokenizer:
     Args:
         lowercase: Whether to convert to lowercase (default: True)
         remove_punctuation: Whether to remove punctuation (default: True)
-        stopwords: Set of stopwords to remove, or None to disable (default: DEFAULT_STOPWORDS)
+        stopwords: Set of stopwords to remove (default: DEFAULT_STOPWORDS)
         min_token_length: Minimum token length to keep (default: 2)
     """
 
@@ -59,7 +57,7 @@ class Tokenizer:
         self,
         lowercase: bool = True,
         remove_punctuation: bool = True,
-        stopwords: Set[str] | None = DEFAULT_STOPWORDS,
+        stopwords: set[str] | None = DEFAULT_STOPWORDS,
         min_token_length: int = 2,
     ) -> None:
         self.lowercase = lowercase
@@ -71,7 +69,7 @@ class Tokenizer:
         if self.remove_punctuation:
             self._punct_pattern = re.compile(r"[^\w\s]", re.UNICODE)
 
-    def tokenize(self, text: str) -> List[str]:
+    def tokenize(self, text: str) -> list[str]:
         """Tokenize text into list of tokens.
 
         Args:
@@ -112,7 +110,7 @@ class Tokenizer:
 
         return filtered_tokens
 
-    def tokenize_batch(self, texts: List[str]) -> List[List[str]]:
+    def tokenize_batch(self, texts: list[str]) -> list[list[str]]:
         """Tokenize multiple texts.
 
         Args:
@@ -128,7 +126,9 @@ class Tokenizer:
 _default_tokenizer = Tokenizer()
 
 
-def tokenize(text: str, lowercase: bool = True, remove_punctuation: bool = True) -> List[str]:
+def tokenize(
+    text: str, lowercase: bool = True, remove_punctuation: bool = True
+) -> list[str]:
     """Tokenize text using default tokenizer.
 
     Convenience function for one-off tokenization.
@@ -152,5 +152,7 @@ def tokenize(text: str, lowercase: bool = True, remove_punctuation: bool = True)
         return _default_tokenizer.tokenize(text)
     else:
         # Create custom tokenizer
-        tokenizer = Tokenizer(lowercase=lowercase, remove_punctuation=remove_punctuation)
+        tokenizer = Tokenizer(
+            lowercase=lowercase, remove_punctuation=remove_punctuation
+        )
         return tokenizer.tokenize(text)

@@ -5,9 +5,9 @@ optimized for AWS Lambda environments. boto3 is only imported when S3 operations
 are actually used, keeping the package lightweight for local-only usage.
 """
 
-from pathlib import Path
-from typing import Optional, Dict, Any, List
 import sys
+from pathlib import Path
+from typing import Any
 
 
 class _S3Client:
@@ -28,6 +28,7 @@ class _S3Client:
             try:
                 import boto3
                 from botocore.exceptions import ClientError
+
                 self._boto3 = boto3
                 self._ClientError = ClientError
             except ImportError as e:
@@ -50,7 +51,9 @@ class _S3Client:
             client.download_file(bucket, key, local_path)
         except self._ClientError as e:
             error_code = e.response.get("Error", {}).get("Code", "Unknown")
-            raise RuntimeError(f"Failed to download s3://{bucket}/{key}: {error_code}") from e
+            raise RuntimeError(
+                f"Failed to download s3://{bucket}/{key}: {error_code}"
+            ) from e
 
     def get_object(self, bucket: str, key: str, **kwargs):
         """Get an object from S3."""
@@ -59,16 +62,22 @@ class _S3Client:
             return client.get_object(Bucket=bucket, Key=key, **kwargs)
         except self._ClientError as e:
             error_code = e.response.get("Error", {}).get("Code", "Unknown")
-            raise RuntimeError(f"Failed to get s3://{bucket}/{key}: {error_code}") from e
+            raise RuntimeError(
+                f"Failed to get s3://{bucket}/{key}: {error_code}"
+            ) from e
 
-    def upload_file(self, local_path: str, bucket: str, key: str, extra_args: Optional[Dict] = None) -> None:
+    def upload_file(
+        self, local_path: str, bucket: str, key: str, extra_args: dict | None = None
+    ) -> None:
         """Upload a file to S3."""
         client = self._get_client()
         try:
             client.upload_file(local_path, bucket, key, ExtraArgs=extra_args or {})
         except self._ClientError as e:
             error_code = e.response.get("Error", {}).get("Code", "Unknown")
-            raise RuntimeError(f"Failed to upload to s3://{bucket}/{key}: {error_code}") from e
+            raise RuntimeError(
+                f"Failed to upload to s3://{bucket}/{key}: {error_code}"
+            ) from e
 
     def head_object(self, bucket: str, key: str):
         """Get metadata for an S3 object."""
@@ -98,7 +107,9 @@ class _S3Client:
             # Don't raise error if object doesn't exist (idempotent)
             error_code = e.response.get("Error", {}).get("Code", "Unknown")
             if error_code != "NoSuchKey":
-                raise RuntimeError(f"Failed to delete s3://{bucket}/{key}: {error_code}") from e
+                raise RuntimeError(
+                    f"Failed to delete s3://{bucket}/{key}: {error_code}"
+                ) from e
 
     def get_paginator(self, operation_name: str):
         """Get a paginator for an S3 operation."""
@@ -111,7 +122,7 @@ _s3_client = _S3Client()
 
 
 def download_from_s3(
-    bucket: str, key: str, local_path: str, byte_range: Optional[str] = None
+    bucket: str, key: str, local_path: str, byte_range: str | None = None
 ) -> None:
     """Download a file from S3 to local disk.
 
@@ -138,7 +149,7 @@ def download_from_s3(
 
 
 def upload_to_s3(
-    local_path: str, bucket: str, key: str, extra_args: Optional[Dict[str, Any]] = None
+    local_path: str, bucket: str, key: str, extra_args: dict[str, Any] | None = None
 ) -> None:
     """Upload a local file to S3.
 
@@ -188,7 +199,7 @@ def get_s3_object_size(bucket: str, key: str) -> int:
     return response["ContentLength"]
 
 
-def list_s3_collections(bucket: str, prefix: str = "") -> List[str]:
+def list_s3_collections(bucket: str, prefix: str = "") -> list[str]:
     """List all PeachBase collections (.pdb files) in an S3 bucket/prefix.
 
     Args:
@@ -210,28 +221,30 @@ def list_s3_collections(bucket: str, prefix: str = "") -> List[str]:
         prefix = prefix + "/"
 
     # Use paginator to handle large numbers of objects
-    paginator = _s3_client.get_paginator('list_objects_v2')
+    paginator = _s3_client.get_paginator("list_objects_v2")
 
     try:
         for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
             # Check if any objects were returned
-            if 'Contents' not in page:
+            if "Contents" not in page:
                 continue
 
-            for obj in page['Contents']:
-                key = obj['Key']
+            for obj in page["Contents"]:
+                key = obj["Key"]
 
                 # Only include .pdb files
-                if key.endswith('.pdb'):
+                if key.endswith(".pdb"):
                     # Extract collection name (remove prefix and .pdb extension)
-                    collection_name = key[len(prefix):].rstrip('.pdb')
+                    collection_name = key[len(prefix) :].rstrip(".pdb")
 
                     # Skip if name contains subdirectories (only top-level collections)
-                    if '/' not in collection_name:
+                    if "/" not in collection_name:
                         collections.append(collection_name)
 
     except Exception as e:
-        raise RuntimeError(f"Failed to list collections in s3://{bucket}/{prefix}: {e}") from e
+        raise RuntimeError(
+            f"Failed to list collections in s3://{bucket}/{prefix}: {e}"
+        ) from e
 
     return sorted(collections)
 
@@ -300,7 +313,11 @@ def is_boto3_available() -> bool:
     Returns:
         True if boto3 can be imported, False otherwise
     """
-    return 'boto3' in sys.modules or _s3_client._boto3 is not None or (
-        # Try to find boto3 without importing
-        __import__('importlib.util').util.find_spec('boto3') is not None
+    return (
+        "boto3" in sys.modules
+        or _s3_client._boto3 is not None
+        or (
+            # Try to find boto3 without importing
+            __import__("importlib.util").util.find_spec("boto3") is not None
+        )
     )

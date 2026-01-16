@@ -1,23 +1,25 @@
 """Reader for loading PeachBase collections from binary format."""
 
-from pathlib import Path
-from typing import TYPE_CHECKING, Tuple, Dict, Any, Optional
 import mmap
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 from peachbase.storage.format import (
-    PeachBaseHeader,
-    VectorSection,
-    TextSection,
-    MetadataSection,
-    BM25IndexSection,
     HEADER_SIZE,
+    BM25IndexSection,
+    MetadataSection,
+    PeachBaseHeader,
+    TextSection,
+    VectorSection,
 )
 
 if TYPE_CHECKING:
-    from peachbase.collection import Collection
+    pass
 
 
-def read_collection(path: str, use_mmap: bool = True) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+def read_collection(
+    path: str, use_mmap: bool = True
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """Read a collection from disk.
 
     Args:
@@ -44,7 +46,9 @@ def read_collection(path: str, use_mmap: bool = True) -> Tuple[Dict[str, Any], D
             return _read_collection_buffered(f, header)
 
 
-def _read_collection_mmap(f, header: PeachBaseHeader) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+def _read_collection_mmap(
+    f, header: PeachBaseHeader
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """Read collection using memory mapping."""
     # Memory-map the file
     mm = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
@@ -90,7 +94,7 @@ def _read_collection_mmap(f, header: PeachBaseHeader) -> Tuple[Dict[str, Any], D
 
     # Build documents list
     documents = []
-    for i, (doc_id, text) in enumerate(text_section.texts.items()):
+    for _i, (doc_id, text) in enumerate(text_section.texts.items()):
         documents.append(
             {
                 "id": doc_id,
@@ -110,13 +114,15 @@ def _read_collection_mmap(f, header: PeachBaseHeader) -> Tuple[Dict[str, Any], D
 
 def _read_collection_buffered(
     f, header: PeachBaseHeader
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """Read collection by loading entire file into memory."""
     # Seek to vector section
     f.seek(header.vector_offset)
     vector_size = header.text_offset - header.vector_offset
     vector_data = f.read(vector_size)
-    vector_section = VectorSection.from_bytes(vector_data, header.n_documents, header.dimension)
+    vector_section = VectorSection.from_bytes(
+        vector_data, header.n_documents, header.dimension
+    )
 
     # Read text section
     text_size = header.metadata_offset - header.text_offset
@@ -144,7 +150,7 @@ def _read_collection_buffered(
 
     # Build documents list
     documents = []
-    for i, (doc_id, text) in enumerate(text_section.texts.items()):
+    for _i, (doc_id, text) in enumerate(text_section.texts.items()):
         documents.append(
             {
                 "id": doc_id,
@@ -162,7 +168,9 @@ def _read_collection_buffered(
     return collection_data, bm25_index
 
 
-def load_collection_from_s3(bucket: str, key: str, use_mmap: bool = True) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+def load_collection_from_s3(
+    bucket: str, key: str, use_mmap: bool = True
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """Load a collection from S3.
 
     Args:
@@ -173,8 +181,9 @@ def load_collection_from_s3(bucket: str, key: str, use_mmap: bool = True) -> Tup
     Returns:
         Tuple of (collection_data, bm25_index) dicts
     """
-    from peachbase.utils.s3 import download_from_s3
     import tempfile
+
+    from peachbase.utils.s3 import download_from_s3
 
     # Download to temporary file
     with tempfile.NamedTemporaryFile(suffix=".pdb", delete=False) as tmp_file:
