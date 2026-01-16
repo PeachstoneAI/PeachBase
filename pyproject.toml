@@ -9,14 +9,12 @@ description = "Lightweight vector database optimized for AWS Lambda with lexical
 authors = [{name = "Philipp", email = "philipp@peachstone.ai"}]
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 keywords = ["vector-database", "search", "embeddings", "lambda", "bm25", "semantic-search", "hybrid-search"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Programming Language :: C",
@@ -56,7 +54,7 @@ peachbase = ["*.so", "*.pyd", "py.typed"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py311"
+target-version = "py313"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "C4", "SIM"]
@@ -66,7 +64,7 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.13"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
